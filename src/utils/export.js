@@ -153,6 +153,7 @@ export const exportToExcel = async (data) => {
     const remaining = item.jumlah - totalPaid;
 
     return {
+      'ID Hutang': item.id,
       'Nama': item.nama,
       'Tipe': item.tipe,
       'Total Hutang': item.jumlah,
@@ -171,6 +172,7 @@ export const exportToExcel = async (data) => {
   const pembayaranData = pembayaranHutang.map(payment => {
     const hutangItem = hutang.find(h => h.id === payment.hutangId);
     return {
+      'ID Hutang': payment.hutangId,
       'Nama Hutang': hutangItem ? hutangItem.nama : 'Unknown',
       'Jumlah Bayar': payment.jumlah,
       'Tanggal Bayar': formatDate(payment.tanggal),
@@ -187,6 +189,7 @@ export const exportToExcel = async (data) => {
     const remaining = item.jumlah - totalPaid;
 
     return {
+      'ID Piutang': item.id,
       'Nama Orang': item.namaOrang,
       'Total Piutang': item.jumlah,
       'Total Diterima': totalPaid,
@@ -204,6 +207,7 @@ export const exportToExcel = async (data) => {
   const pembayaranPiutangData = (pembayaranPiutang || []).map(payment => {
     const piutangItem = (piutang || []).find(p => p.id === payment.piutangId);
     return {
+      'ID Piutang': payment.piutangId,
       'Nama Orang': piutangItem ? piutangItem.namaOrang : 'Unknown',
       'Jumlah Diterima': payment.jumlah,
       'Tanggal Terima': formatDate(payment.tanggal),

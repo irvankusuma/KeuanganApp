@@ -21,6 +21,11 @@ export const importFromExcel = async (file) => {
           maintenance: 0
         };
 
+        const hutangIdMap = new Map();
+        const hutangNameMap = new Map();
+        const piutangIdMap = new Map();
+        const piutangNameMap = new Map();
+
         // Import Hutang
         if (workbook.SheetNames.includes('Hutang')) {
           const sheet = workbook.Sheets['Hutang'];
@@ -28,16 +33,56 @@ export const importFromExcel = async (file) => {
           
           for (const row of jsonData) {
             if (row['Nama']) {
-              await db.hutang.add({
+              const oldId = parseNullableInt(row['ID Hutang']);
+              const newId = await db.hutang.add({
                 nama: row['Nama'],
                 tipe: row['Tipe'] || 'Lainnya',
-                jumlah: parseInt(row['Total Hutang']) || 0,
-                periode: parseInt(row['Periode (bulan)']) || 12,
+                jumlah: parseAmount(row['Total Hutang']),
+                periode: parseNullableInt(row['Periode (bulan)']) || 12,
                 tanggal: parseDateString(row['Tanggal']),
-                catatan: row['Catatan'] || ''
+                catatan: sanitizeText(row['Catatan'])
               });
+
+              if (oldId !== null) {
+                hutangIdMap.set(oldId, newId);
+              }
+
+              if (!hutangNameMap.has(row['Nama'])) {
+                hutangNameMap.set(row['Nama'], []);
+              }
+              hutangNameMap.get(row['Nama']).push(newId);
+
               imported.hutang++;
             }
+          }
+        }
+
+        // Import Pembayaran Hutang
+        if (workbook.SheetNames.includes('Pembayaran Hutang')) {
+          const sheet = workbook.Sheets['Pembayaran Hutang'];
+          const jsonData = XLSX.utils.sheet_to_json(sheet);
+
+          for (const row of jsonData) {
+            const jumlahBayar = parseAmount(row['Jumlah Bayar']);
+            if (!jumlahBayar) continue;
+
+            const oldHutangId = parseNullableInt(row['ID Hutang']);
+            let hutangId = oldHutangId !== null ? hutangIdMap.get(oldHutangId) : null;
+
+            if (!hutangId && row['Nama Hutang']) {
+              const candidates = hutangNameMap.get(row['Nama Hutang']) || [];
+              hutangId = candidates.find((candidateId) => candidateId !== undefined) || null;
+            }
+
+            if (!hutangId) continue;
+
+            await db.pembayaranHutang.add({
+              hutangId,
+              jumlah: jumlahBayar,
+              tanggal: parseDateString(row['Tanggal Bayar']),
+              catatan: sanitizeText(row['Catatan'])
+            });
+            imported.pembayaranHutang++;
           }
         }
 
@@ -48,15 +93,55 @@ export const importFromExcel = async (file) => {
           
           for (const row of jsonData) {
             if (row['Nama Orang']) {
-              await db.piutang.add({
+              const oldId = parseNullableInt(row['ID Piutang']);
+              const newId = await db.piutang.add({
                 namaOrang: row['Nama Orang'],
-                jumlah: parseInt(row['Total Piutang']) || 0,
+                jumlah: parseAmount(row['Total Piutang']),
                 tanggal: parseDateString(row['Tanggal Pinjam']),
                 jatuhTempo: row['Jatuh Tempo'] !== '-' ? parseDateString(row['Jatuh Tempo']) : '',
-                catatan: row['Catatan'] || ''
+                catatan: sanitizeText(row['Catatan'])
               });
+
+              if (oldId !== null) {
+                piutangIdMap.set(oldId, newId);
+              }
+
+              if (!piutangNameMap.has(row['Nama Orang'])) {
+                piutangNameMap.set(row['Nama Orang'], []);
+              }
+              piutangNameMap.get(row['Nama Orang']).push(newId);
+
               imported.piutang++;
             }
+          }
+        }
+
+        // Import Pembayaran Piutang
+        if (workbook.SheetNames.includes('Pembayaran Piutang')) {
+          const sheet = workbook.Sheets['Pembayaran Piutang'];
+          const jsonData = XLSX.utils.sheet_to_json(sheet);
+
+          for (const row of jsonData) {
+            const jumlahDiterima = parseAmount(row['Jumlah Diterima']);
+            if (!jumlahDiterima) continue;
+
+            const oldPiutangId = parseNullableInt(row['ID Piutang']);
+            let piutangId = oldPiutangId !== null ? piutangIdMap.get(oldPiutangId) : null;
+
+            if (!piutangId && row['Nama Orang']) {
+              const candidates = piutangNameMap.get(row['Nama Orang']) || [];
+              piutangId = candidates.find((candidateId) => candidateId !== undefined) || null;
+            }
+
+            if (!piutangId) continue;
+
+            await db.pembayaranPiutang.add({
+              piutangId,
+              jumlah: jumlahDiterima,
+              tanggal: parseDateString(row['Tanggal Terima']),
+              catatan: sanitizeText(row['Catatan'])
+            });
+            imported.pembayaranPiutang++;
           }
         }
 
@@ -70,9 +155,9 @@ export const importFromExcel = async (file) => {
               await db.pemasukan.add({
                 sumber: row['Sumber'],
                 tipe: row['Tipe'] || 'Lainnya',
-                jumlah: parseInt(row['Jumlah']) || 0,
+                jumlah: parseAmount(row['Jumlah']),
                 tanggal: parseDateString(row['Tanggal']),
-                catatan: row['Catatan'] || ''
+                catatan: sanitizeText(row['Catatan'])
               });
               imported.pemasukan++;
             }
@@ -88,9 +173,9 @@ export const importFromExcel = async (file) => {
             if (row['Kategori']) {
               await db.pengeluaran.add({
                 kategori: row['Kategori'],
-                jumlah: parseInt(row['Jumlah']) || 0,
+                jumlah: parseAmount(row['Jumlah']),
                 tanggal: parseDateString(row['Tanggal']),
-                catatan: row['Catatan'] || ''
+                catatan: sanitizeText(row['Catatan'])
               });
               imported.pengeluaran++;
             }
@@ -107,9 +192,9 @@ export const importFromExcel = async (file) => {
               await db.maintenance.add({
                 nama: row['Nama'],
                 tanggal: parseDateString(row['Tanggal']),
-                km_saat_ini: parseInt(row['KM Saat Ini']) || 0,
-                km_berikutnya: parseInt(row['KM Berikutnya']) || 0,
-                catatan: row['Catatan'] || ''
+                km_saat_ini: parseNullableInt(row['KM Saat Ini']) || 0,
+                km_berikutnya: parseNullableInt(row['KM Berikutnya']) || 0,
+                catatan: sanitizeText(row['Catatan'])
               });
               imported.maintenance++;
             }
@@ -137,7 +222,9 @@ export const importFromTXT = async (file) => {
         const text = e.target.result;
         let imported = {
           hutang: 0,
+          pembayaranHutang: 0,
           piutang: 0,
+          pembayaranPiutang: 0,
           pemasukan: 0,
           pengeluaran: 0,
           maintenance: 0
@@ -204,6 +291,34 @@ export const importFromTXT = async (file) => {
 // Helper functions
 const parseDateString = (dateStr) => {
   if (!dateStr || dateStr === '-') return new Date().toISOString().split('T')[0];
+
+  if (dateStr instanceof Date && !Number.isNaN(dateStr.getTime())) {
+    return dateStr.toISOString().split('T')[0];
+  }
+
+  if (typeof dateStr === 'number') {
+    const parsed = XLSX.SSF.parse_date_code(dateStr);
+    if (parsed) {
+      const day = String(parsed.d).padStart(2, '0');
+      const month = String(parsed.m).padStart(2, '0');
+      return `${parsed.y}-${month}-${day}`;
+    }
+  }
+
+  const normalizedDate = String(dateStr).trim();
+  if (/^\d{4}-\d{2}-\d{2}$/.test(normalizedDate)) {
+    return normalizedDate;
+  }
+
+  if (/^\d{2}\/\d{2}\/\d{4}$/.test(normalizedDate)) {
+    const [day, month, year] = normalizedDate.split('/');
+    return `${year}-${month}-${day}`;
+  }
+
+  const timestamp = Date.parse(normalizedDate);
+  if (!Number.isNaN(timestamp)) {
+    return new Date(timestamp).toISOString().split('T')[0];
+  }
   
   // Try to parse Indonesian date format: "3 Februari 2026"
   const months = {
@@ -212,7 +327,7 @@ const parseDateString = (dateStr) => {
     'September': '09', 'Oktober': '10', 'November': '11', 'Desember': '12'
   };
   
-  const parts = dateStr.split(' ');
+  const parts = normalizedDate.split(' ');
   if (parts.length === 3) {
     const day = parts[0].padStart(2, '0');
     const month = months[parts[1]];
@@ -224,10 +339,22 @@ const parseDateString = (dateStr) => {
 };
 
 const parseAmount = (amountStr) => {
+  if (typeof amountStr === 'number') return amountStr;
   if (!amountStr) return 0;
   // Remove "Rp", dots, and spaces
-  const cleaned = amountStr.toString().replace(/Rp|\.|\s/g, '');
+  const cleaned = amountStr.toString().replace(/Rp|\.|,|\s/g, '');
   return parseInt(cleaned) || 0;
+};
+
+const parseNullableInt = (value) => {
+  if (value === null || value === undefined || value === '') return null;
+  const parsed = parseInt(value, 10);
+  return Number.isNaN(parsed) ? null : parsed;
+};
+
+const sanitizeText = (value) => {
+  if (!value || value === '-') return '';
+  return String(value);
 };
 
 const extractSection = (text, marker) => {
