@@ -8,7 +8,6 @@ const Sidebar = ({ currentPage, onNavigate, onExport, isCollapsed, onToggle }) =
     { id: 'pemasukan', icon: TrendingUp, label: 'Pemasukan' },
     { id: 'pengeluaran', icon: TrendingDown, label: 'Pengeluaran' },
     { id: 'perbaikan', icon: Wrench, label: 'Perbaikan' },
-    { id: 'history', icon: History, label: 'History' },
   ];
 
   return (
@@ -72,17 +71,31 @@ const Sidebar = ({ currentPage, onNavigate, onExport, isCollapsed, onToggle }) =
         })}
       </nav>
 
-      {/* Export Button */}
+      {/* Data Menu */}
       <div className="p-4 border-t border-dark-border">
+        {!isCollapsed && <p className="text-xs uppercase tracking-wide text-gray-400 mb-3">Data</p>}
         <button
           onClick={onExport}
           className={`w-full flex items-center gap-3 px-4 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors ${
             isCollapsed ? 'justify-center' : ''
           }`}
-          title={isCollapsed ? 'Export Data' : ''}
+          title={isCollapsed ? 'Kelola Data' : ''}
         >
           <Download size={20} />
-          {!isCollapsed && <span>Export Data</span>}
+          {!isCollapsed && <span>Kelola Data</span>}
+        </button>
+
+        <button
+          onClick={() => onNavigate('history')}
+          className={`w-full mt-2 flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+            currentPage === 'history'
+              ? 'bg-blue-600 text-white'
+              : 'text-gray-300 hover:bg-gray-700'
+          } ${isCollapsed ? 'justify-center' : ''}`}
+          title={isCollapsed ? 'History' : ''}
+        >
+          <History size={20} />
+          {!isCollapsed && <span>History</span>}
         </button>
       </div>
     </aside>
