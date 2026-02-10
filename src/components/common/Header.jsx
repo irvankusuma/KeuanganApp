@@ -1,7 +1,7 @@
-import { Download, Upload } from 'lucide-react';
+import { Download, History } from 'lucide-react';
 import { useState } from 'react';
 
-const Header = ({ title, onExport }) => {
+const Header = ({ title, onExport, onNavigate }) => {
   const [showMenu, setShowMenu] = useState(false);
 
   return (
@@ -29,7 +29,7 @@ const Header = ({ title, onExport }) => {
               onClick={() => setShowMenu(false)}
             />
             
-            <div className="absolute right-0 top-12 bg-dark-card border border-dark-border rounded-lg shadow-lg py-2 w-48 z-20">
+            <div className="absolute right-0 top-12 bg-dark-card border border-dark-border rounded-lg shadow-lg py-2 w-56 z-20">
               <button
                 onClick={() => {
                   onExport();
@@ -41,6 +41,19 @@ const Header = ({ title, onExport }) => {
                 <div>
                   <div className="font-medium">Kelola Data</div>
                   <div className="text-xs text-gray-400">Export/Import</div>
+                </div>
+              </button>
+              <button
+                onClick={() => {
+                  onNavigate('history');
+                  setShowMenu(false);
+                }}
+                className="w-full px-4 py-3 hover:bg-gray-700 text-left flex items-center gap-3"
+              >
+                <History size={18} className="text-blue-400" />
+                <div>
+                  <div className="font-medium">History</div>
+                  <div className="text-xs text-gray-400">Riwayat aktivitas</div>
                 </div>
               </button>
             </div>

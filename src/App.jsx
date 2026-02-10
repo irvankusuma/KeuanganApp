@@ -125,6 +125,7 @@ function App() {
         <Header
           title={getPageTitle()}
           onExport={() => setShowExportModal(true)}
+          onNavigate={setCurrentPage}
         />
 
         {/* Page Content */}
