@@ -18,7 +18,7 @@ const Sidebar = ({ currentPage, onNavigate, onExport, isCollapsed, onToggle }) =
       <div className={`p-4 border-b border-dark-border flex items-center justify-between ${isCollapsed ? 'flex-col gap-2' : ''}`}>
         {isCollapsed ? (
           <div className="text-center">
-            <img src="/logo.png" alt="Logo" className="w-10 h-10 mb-2 mx-auto" />
+            <img src="/logo.svg" alt="Logo" className="w-10 h-10 mb-2 mx-auto" />
             <button
               onClick={onToggle}
               className="p-2 hover:bg-gray-700 rounded-lg transition-colors"
@@ -30,7 +30,7 @@ const Sidebar = ({ currentPage, onNavigate, onExport, isCollapsed, onToggle }) =
         ) : (
           <>
             <div className="flex items-center gap-3">
-              <img src="/logo.png" alt="Logo" className="w-10 h-10" />
+              <img src="/logo.svg" alt="Logo" className="w-10 h-10" />
               <div>
                 <h1 className="text-xl font-bold text-blue-500">KeuanganApp</h1>
                 <p className="text-xs text-gray-400 mt-1">Manajemen Keuangan Pribadi</p>
@@ -61,7 +61,7 @@ const Sidebar = ({ currentPage, onNavigate, onExport, isCollapsed, onToggle }) =
                 isActive
                   ? 'bg-blue-600 text-white'
                   : 'text-gray-300 hover:bg-gray-700'
-              } ${isCollapsed ? 'justify-center' : ''}`}
+              } ${isCollapsed ? 'justify-center px-0' : ''}`}
               title={isCollapsed ? item.label : ''}
             >
               <Icon size={20} />
@@ -77,7 +77,7 @@ const Sidebar = ({ currentPage, onNavigate, onExport, isCollapsed, onToggle }) =
         <button
           onClick={onExport}
           className={`w-full flex items-center gap-3 px-4 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors ${
-            isCollapsed ? 'justify-center' : ''
+            isCollapsed ? 'justify-center px-0' : ''
           }`}
           title={isCollapsed ? 'Kelola Data' : ''}
         >
@@ -91,7 +91,7 @@ const Sidebar = ({ currentPage, onNavigate, onExport, isCollapsed, onToggle }) =
             currentPage === 'history'
               ? 'bg-blue-600 text-white'
               : 'text-gray-300 hover:bg-gray-700'
-          } ${isCollapsed ? 'justify-center' : ''}`}
+          } ${isCollapsed ? 'justify-center px-0' : ''}`}
           title={isCollapsed ? 'History' : ''}
         >
           <History size={20} />

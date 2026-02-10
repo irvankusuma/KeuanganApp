@@ -8,7 +8,7 @@ const Header = ({ title, onExport, onNavigate }) => {
     <header className="md:hidden bg-dark-card border-b border-dark-border p-4 flex items-center justify-between sticky top-0 z-40">
       {/* Logo & Title */}
       <div className="flex items-center gap-3">
-        <img src="/logo.png" alt="Logo" className="w-8 h-8" />
+        <img src="/logo.svg" alt="Logo" className="w-8 h-8" />
         <h1 className="text-lg font-bold">{title}</h1>
       </div>
       

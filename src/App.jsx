@@ -63,7 +63,9 @@ function App() {
       const total = Object.values(result).reduce((sum, val) => sum + val, 0);
       alert(`Berhasil import ${total} data!\n\n` +
         `Hutang: ${result.hutang}\n` +
+        `Pembayaran Hutang: ${result.pembayaranHutang || 0}\n` +
         `Piutang: ${result.piutang}\n` +
+        `Pembayaran Piutang: ${result.pembayaranPiutang || 0}\n` +
         `Pemasukan: ${result.pemasukan}\n` +
         `Pengeluaran: ${result.pengeluaran}\n` +
         `Perbaikan: ${result.maintenance}`
